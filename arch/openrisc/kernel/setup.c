@@ -39,6 +39,7 @@
 #include <linux/memblock.h>
 #include <linux/device.h>
 #include <linux/of_platform.h>
+#include <linux/screen_info.h>
 
 #include <asm/sections.h>
 #include <asm/segment.h>
@@ -50,6 +51,10 @@
 #include <asm/delay.h>
 
 #include "vmlinux.h"
+
+#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
+struct screen_info screen_info;
+#endif
 
 static unsigned long __init setup_memory(void)
 {
