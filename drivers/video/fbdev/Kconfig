@@ -942,6 +942,8 @@ config FB_OPENCORES
 	select FB_CFB_FILLRECT
 	select FB_CFB_COPYAREA
 	select FB_CFB_IMAGEBLIT
+	select VIDEOMODE_HELPERS
+	select FB_MODE_HELPERS
 	help
 	  This enables support for the OpenCores VGA/LCD core.
 

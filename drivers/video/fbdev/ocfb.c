@@ -22,6 +22,8 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 
+#include <video/of_display_timing.h>
+
 /* OCFB register defines */
 #define OCFB_CTRL	0x000
 #define OCFB_STAT	0x004
@@ -310,12 +312,32 @@ static int ocfb_probe(struct platform_device *pdev)
 	fbdev->info.device = &pdev->dev;
 	fbdev->info.par = fbdev;
 
-	/* Video mode setup */
-	if (!fb_find_mode(&fbdev->info.var, &fbdev->info, mode_option,
-			  NULL, 0, &default_mode, 16)) {
-		dev_err(&pdev->dev, "No valid video modes found\n");
-		return -EINVAL;
+	if (!mode_option) {
+		struct fb_videomode mode;
+		u32 bpp;
+
+		ret = of_get_fb_videomode(pdev->dev.of_node, &mode,
+					  OF_USE_NATIVE_MODE);
+		if (ret)
+			return ret;
+
+		fb_videomode_to_var(&fbdev->info.var, &mode);
+
+		ret = of_property_read_u32(pdev->dev.of_node, "bits-per-pixel",
+					   &bpp);
+		if (ret)
+			return ret;
+
+		fbdev->info.var.bits_per_pixel = bpp;
+
+	} else {
+		if (!fb_find_mode(&fbdev->info.var, &fbdev->info, mode_option,
+				  NULL, 0, &default_mode, 16)) {
+			dev_err(&pdev->dev, "No valid video modes found\n");
+			return -EINVAL;
+		}
 	}
+
 	ocfb_init_var(fbdev);
 	ocfb_init_fix(fbdev);
 
