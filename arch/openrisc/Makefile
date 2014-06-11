@@ -52,4 +52,10 @@ BUILTIN_DTB := n
 endif
 core-$(BUILTIN_DTB) += arch/openrisc/boot/dts/
 
+boot		:= arch/$(ARCH)/boot
+BOOT_TARGETS	= vmImage zImage
+
 all: vmlinux
+
+$(BOOT_TARGETS): vmlinux
+	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
