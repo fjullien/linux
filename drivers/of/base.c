@@ -294,7 +294,7 @@ struct property *of_find_property(const struct device_node *np,
 }
 EXPORT_SYMBOL(of_find_property);
 
-struct device_node *__of_find_all_nodes(struct device_node *prev)
+struct device_node *of_walk_to_all_nodes(struct device_node *prev)
 {
 	struct device_node *np;
 	if (!prev) {
@@ -310,6 +310,7 @@ struct device_node *__of_find_all_nodes(struct device_node *prev)
 	}
 	return np;
 }
+EXPORT_SYMBOL(of_walk_to_all_nodes);
 
 /**
  * of_find_all_nodes - Get next node in global list
@@ -325,7 +326,7 @@ struct device_node *of_find_all_nodes(struct device_node *prev)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&devtree_lock, flags);
-	np = __of_find_all_nodes(prev);
+	np = of_walk_to_all_nodes(prev);
 	of_node_get(np);
 	of_node_put(prev);
 	raw_spin_unlock_irqrestore(&devtree_lock, flags);

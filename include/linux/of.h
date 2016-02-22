@@ -188,7 +188,7 @@ static inline void of_property_clear_flag(struct property *p, unsigned long flag
 	clear_bit(flag, &p->_flags);
 }
 
-extern struct device_node *__of_find_all_nodes(struct device_node *prev);
+extern struct device_node *of_walk_to_all_nodes(struct device_node *prev);
 extern struct device_node *of_find_all_nodes(struct device_node *prev);
 
 /*
@@ -237,7 +237,7 @@ static inline const char *of_node_full_name(const struct device_node *np)
 }
 
 #define for_each_of_allnodes_from(from, dn) \
-	for (dn = __of_find_all_nodes(from); dn; dn = __of_find_all_nodes(dn))
+	for (dn = of_walk_to_all_nodes(from); dn; dn = of_walk_to_all_nodes(dn))
 #define for_each_of_allnodes(dn) for_each_of_allnodes_from(NULL, dn)
 extern struct device_node *of_find_node_by_name(struct device_node *from,
 	const char *name);
