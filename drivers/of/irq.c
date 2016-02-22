@@ -38,6 +38,12 @@
 unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
 {
 	struct of_phandle_args oirq;
+	int irq;
+
+	if (of_find_property(dev, "irq_direct_mapping", NULL)) {
+		of_property_read_u32(dev, "interrupts", &irq);
+		return irq;
+	}
 
 	if (of_irq_parse_one(dev, index, &oirq))
 		return 0;

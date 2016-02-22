@@ -118,7 +118,11 @@ struct platform_device *of_device_alloc(struct device_node *np,
 	/* count the io and irq resources */
 	while (of_address_to_resource(np, num_reg, &temp_res) == 0)
 		num_reg++;
-	num_irq = of_irq_count(np);
+	if (of_find_property(np, "irq_direct_mapping", NULL))
+		num_irq = 1;
+	else
+		num_irq = of_irq_count(np);
+
 
 	/* Populate the resource table */
 	if (num_irq || num_reg) {
