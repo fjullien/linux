@@ -292,6 +292,13 @@ config X86_32_LAZY_GS
 	def_bool y
 	depends on X86_32 && !CC_STACKPROTECTOR
 
+config USE_OF
+	bool "Support for device tree"
+	select OF
+	select OF_EARLY_FLATTREE
+	---help---
+	  Device tree support on X86.
+
 config ARCH_HWEIGHT_CFLAGS
 	string
 	default "-fcall-saved-ecx -fcall-saved-edx" if X86_32
