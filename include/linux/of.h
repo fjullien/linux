@@ -344,6 +344,8 @@ extern int of_add_property(struct device_node *np, struct property *prop);
 extern int of_remove_property(struct device_node *np, struct property *prop);
 extern int of_update_property(struct device_node *np, struct property *newprop);
 
+extern int of_attach_node_sysfs(struct device_node *np);
+
 /* For updating the device tree at runtime */
 #define OF_RECONFIG_ATTACH_NODE		0x0001
 #define OF_RECONFIG_DETACH_NODE		0x0002

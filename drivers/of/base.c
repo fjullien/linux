@@ -156,7 +156,7 @@ int __of_add_property_sysfs(struct device_node *np, struct property *pp)
 	return rc;
 }
 
-int __of_attach_node_sysfs(struct device_node *np)
+int of_attach_node_sysfs(struct device_node *np)
 {
 	const char *name;
 	struct property *pp;
@@ -188,6 +188,7 @@ int __of_attach_node_sysfs(struct device_node *np)
 
 	return 0;
 }
+EXPORT_SYMBOL(of_attach_node_sysfs);
 
 void __init of_core_init(void)
 {
@@ -202,7 +203,7 @@ void __init of_core_init(void)
 		return;
 	}
 	for_each_of_allnodes(np)
-		__of_attach_node_sysfs(np);
+		of_attach_node_sysfs(np);
 	mutex_unlock(&of_mutex);
 
 	/* Symlink in /proc as required by userspace ABI */
