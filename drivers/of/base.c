@@ -172,7 +172,7 @@ int __of_attach_node_sysfs(struct device_node *np)
 	if (!np->parent) {
 		/* Nodes without parents are new top level trees */
 		rc = kobject_add(&np->kobj, NULL, "%s",
-				 safe_name(&of_kset->kobj, "base"));
+				 safe_name(&of_kset->kobj, np == of_root ? "base" : np->name));
 	} else {
 		name = safe_name(&np->parent->kobj, kbasename(np->full_name));
 		if (!name || !name[0])
