@@ -258,6 +258,7 @@ static inline struct device_node *of_find_node_by_path(const char *path)
 }
 
 extern struct device_node *of_find_node_by_phandle(phandle handle);
+extern struct device_node *of_find_node_by_phandle_from(struct device_node *root, phandle handle);
 extern struct device_node *of_get_parent(const struct device_node *node);
 extern struct device_node *of_get_next_parent(struct device_node *node);
 extern struct device_node *of_get_next_child(const struct device_node *node,
@@ -343,7 +344,7 @@ extern int of_machine_is_compatible(const char *compat);
 extern int of_add_property(struct device_node *np, struct property *prop);
 extern int of_remove_property(struct device_node *np, struct property *prop);
 extern int of_update_property(struct device_node *np, struct property *newprop);
-
+extern struct device_node *find_root_node(struct device_node *np);
 extern int of_attach_node_sysfs(struct device_node *np);
 
 /* For updating the device tree at runtime */
@@ -432,6 +433,11 @@ static inline struct device_node *of_find_node_opts_by_path(const char *path,
 }
 
 static inline struct device_node *of_find_node_by_phandle(phandle handle)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_find_node_by_phandle_from(phandle handle)
 {
 	return NULL;
 }

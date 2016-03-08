@@ -1080,6 +1080,31 @@ struct device_node *of_find_node_by_phandle(phandle handle)
 EXPORT_SYMBOL(of_find_node_by_phandle);
 
 /**
+ * of_find_node_by_phandle_from - Find a node given a phandle in a given tree
+ * @handle:	phandle of the node to find
+ *
+ * Returns a node pointer with refcount incremented, use
+ * of_node_put() on it when done.
+ */
+struct device_node *of_find_node_by_phandle_from(struct device_node *root, phandle handle)
+{
+	struct device_node *np;
+	unsigned long flags;
+
+	if (!handle)
+		return NULL;
+
+	raw_spin_lock_irqsave(&devtree_lock, flags);
+	for_each_of_allnodes_from(root, np)
+		if (np->phandle == handle)
+			break;
+	of_node_get(np);
+	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+	return np;
+}
+EXPORT_SYMBOL(of_find_node_by_phandle_from);
+
+/**
  * of_property_count_elems_of_size - Count the number of elements in a property
  *
  * @np:		device node from which the property value is to be read.
@@ -1441,6 +1466,15 @@ void of_print_phandle_args(const char *msg, const struct of_phandle_args *args)
 	printk("\n");
 }
 
+struct device_node *find_root_node(struct device_node *np)
+{
+	while (np->parent)
+		np = np->parent;
+
+	return np;
+}
+EXPORT_SYMBOL(find_root_node);
+
 static int __of_parse_phandle_with_args(const struct device_node *np,
 					const char *list_name,
 					const char *cells_name,
@@ -1480,7 +1514,7 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
 			 * below.
 			 */
 			if (cells_name || cur_index == index) {
-				node = of_find_node_by_phandle(phandle);
+				node = of_find_node_by_phandle_from(find_root_node(np), phandle);
 				if (!node) {
 					pr_err("%s: could not find phandle\n",
 						np->full_name);
