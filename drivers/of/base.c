@@ -22,6 +22,7 @@
 #include <linux/cpu.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/of_fdt.h>
 #include <linux/of_graph.h>
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -189,9 +190,53 @@ int __of_attach_node_sysfs(struct device_node *np)
 	return 0;
 }
 
+int get_builtin_dtb(uint8_t *dtb_begin, uint8_t *dtb_end, struct device_node **dtb_node)
+{
+	const int size = dtb_end - dtb_begin;
+	void *dtb;
+	struct device_node *node;
+	int rc;
+
+	if (!size) {
+		pr_warn("%s: No DTB to attach\n", __func__);
+		return -ENODATA;
+	}
+
+	dtb = kmemdup(dtb_begin, size, GFP_KERNEL);
+
+	if (!dtb_begin) {
+		pr_warn("%s: Failed to allocate memory for built-in dtb\n", __func__);
+		return -ENOMEM;
+	}
+
+	of_fdt_unflatten_tree(dtb, &node);
+	if (!node) {
+		pr_warn("%s: No tree to attach\n", __func__);
+		return -ENODATA;
+	}
+
+	of_node_set_flag(node, OF_DETACHED);
+	rc = of_resolve_phandles(node);
+	if (rc) {
+		pr_err("%s: Failed to resolve phandles (rc=%i)\n", __func__, rc);
+		return -EINVAL;
+	}
+
+	*dtb_node = node;
+
+	return 0;
+}
+
 void __init of_core_init(void)
 {
 	struct device_node *np;
+
+	/*
+	 * __dtb_default_begin[] and __dtb_default_end[] are magically
+	 * created by cmd_dt_S_dtb in scripts/Makefile.lib
+	 */
+	extern uint8_t __dtb_default_begin[];
+	extern uint8_t __dtb_default_end[];
 
 	/* Create the kset, and register existing nodes */
 	mutex_lock(&of_mutex);
@@ -201,6 +246,10 @@ void __init of_core_init(void)
 		pr_err("devicetree: failed to register existing nodes\n");
 		return;
 	}
+
+	if (!of_root && IS_ENABLED(OF_DEFAULT_DTB))
+		get_builtin_dtb(__dtb_default_begin, __dtb_default_end, &of_root);
+
 	for_each_of_allnodes(np)
 		__of_attach_node_sysfs(np);
 	mutex_unlock(&of_mutex);

@@ -896,42 +896,19 @@ static int attach_node_and_children(struct device_node *np)
  */
 static int __init unittest_data_add(void)
 {
-	void *unittest_data;
 	struct device_node *unittest_data_node, *np;
+	int rc;
+
 	/*
 	 * __dtb_testcases_begin[] and __dtb_testcases_end[] are magically
 	 * created by cmd_dt_S_dtb in scripts/Makefile.lib
 	 */
 	extern uint8_t __dtb_testcases_begin[];
 	extern uint8_t __dtb_testcases_end[];
-	const int size = __dtb_testcases_end - __dtb_testcases_begin;
-	int rc;
 
-	if (!size) {
-		pr_warn("%s: No testcase data to attach; not running tests\n",
-			__func__);
-		return -ENODATA;
-	}
-
-	/* creating copy */
-	unittest_data = kmemdup(__dtb_testcases_begin, size, GFP_KERNEL);
-
-	if (!unittest_data) {
-		pr_warn("%s: Failed to allocate memory for unittest_data; "
-			"not running tests\n", __func__);
-		return -ENOMEM;
-	}
-	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
-	if (!unittest_data_node) {
-		pr_warn("%s: No tree to attach; not running tests\n", __func__);
-		return -ENODATA;
-	}
-	of_node_set_flag(unittest_data_node, OF_DETACHED);
-	rc = of_resolve_phandles(unittest_data_node);
-	if (rc) {
-		pr_err("%s: Failed to resolve phandles (rc=%i)\n", __func__, rc);
-		return -EINVAL;
-	}
+	rc = get_builtin_dtb(__dtb_testcases_begin, __dtb_testcases_end, &unittest_data_node);
+	if (rc)
+		return rc;
 
 	if (!of_root) {
 		of_root = unittest_data_node;
