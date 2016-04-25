@@ -226,6 +226,7 @@ int get_builtin_dtb(uint8_t *dtb_begin, uint8_t *dtb_end, struct device_node **d
 
 	return 0;
 }
+EXPORT_SYMBOL(get_builtin_dtb);
 
 void __init of_core_init(void)
 {
