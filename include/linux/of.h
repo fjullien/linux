@@ -377,6 +377,8 @@ const char *of_prop_next_string(struct property *prop, const char *cur);
 
 bool of_console_check(struct device_node *dn, char *name, int index);
 
+int of_get_builtin_dtb(uint8_t *dtb_begin, uint8_t *dtb_end, struct device_node **dtb_node);
+
 #else /* CONFIG_OF */
 
 static inline void of_core_init(void)

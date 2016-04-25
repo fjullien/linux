@@ -15,4 +15,7 @@ obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
 obj-$(CONFIG_OF_RESOLVE)  += resolver.o
 obj-$(CONFIG_OF_OVERLAY) += overlay.o
 
+obj-y += default.dtb.o
+targets += default.dtb default.dtb.S
+
 obj-$(CONFIG_OF_UNITTEST) += unittest-data/
