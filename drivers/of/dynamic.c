@@ -258,6 +258,7 @@ int of_attach_node(struct device_node *np)
 
 	return 0;
 }
+EXPORT_SYMBOL_GPL(of_attach_node);
 
 void __of_detach_node(struct device_node *np)
 {
