@@ -1039,6 +1039,8 @@ static int ethoc_probe(struct platform_device *pdev)
 		goto free;
 	}
 
+	printk("ETH ressources --> %pR\n", res);
+
 	mmio = devm_request_mem_region(&pdev->dev, res->start,
 			resource_size(res), res->name);
 	if (!mmio) {
