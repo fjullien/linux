@@ -20,6 +20,14 @@ config OF_DEFAULT_DTB
 	  This option builds in an empty device tree.
 	  If unsure, say N here, but this option is safe to enable.
 
+config OF_PCI_PROXY
+	tristate "PCI ressources proxy support"
+	select OF_OVERLAY
+	help
+	 The PCI ressources proxy driver maps existing ressources of
+	 a PCI device to childs nodes in a device tree.
+
+
 config OF_UNITTEST
 	bool "Device Tree runtime unit tests"
 	depends on OF_IRQ
