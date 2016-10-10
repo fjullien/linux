@@ -365,6 +365,45 @@ preferred_addr:
 	cld
 	popq	%rsi
 
+#ifdef CONFIG_X86_APPENDED_DTB
+/*
+ * Check if an appended device tree blob is present.
+ * r13 = appended dtb size (0 if not present)
+ * r12 = address of the appended dtb
+ */
+	pushq	%rax
+	pushq	%rdx
+
+	xorq	%r13, %r13
+
+	movq	$(_edata - startup_32), %rcx
+	leaq	startup_32(%rip), %rdx
+
+	/* Calculate the appended DTB address. We need to add 4 bytes for
+	 * CRC dans padding to the next 16-byte paragraph (see ../tools/build.c)
+	 */
+	addq	$19, %rcx
+	andq	$0xfffffffffffffff0, %rcx
+	addq	%rdx, %rcx
+	movq	%rcx, %r12
+
+	movq	(%rcx), %rax
+
+	/* DTB sig is 0xd00dfeed big endian */
+	movl	$0xedfe0dd0, %edx
+
+	cmpl	%eax, %edx
+	jne	1f
+
+	/* Get DTB size */
+	movl	4(%rcx), %edx
+	bswap	%edx
+	movq	%rdx, %r13
+1:
+	popq	%rdx
+	popq	%rax
+#endif
+
 /*
  * Jump to the relocated address.
  */
@@ -423,6 +462,20 @@ relocated:
 	movq	$z_output_len, %r9	/* decompressed length, end of relocs */
 	call	extract_kernel		/* returns kernel location in %rax */
 	popq	%rsi
+
+#ifdef CONFIG_X86_APPENDED_DTB
+	cmpq	$0,%r13
+	je	2f
+	pushq	%rsi
+	pushq	%rax			/* save address */
+	movq	%rsi, %rdi		/* real mode address */
+	movq	%r12, %rsi		/* dtb start */
+	movq	%r13, %rdx		/* dtb size */
+	call	relocate_dtb
+	popq	%rax
+	popq	%rsi
+2:
+#endif
 
 /*
  * Jump to the decompressed kernel.

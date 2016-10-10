@@ -201,6 +201,40 @@ preferred_addr:
 	cld
 	popl	%esi
 
+#if CONFIG_X86_APPENDED_DTB
+/*
+ * Check if an appended device tree blob is present.
+ */
+
+	movl	$0, dtb_sz(%ebp)
+
+	movl	$(_edata - startup_32), %ecx
+	leal	startup_32(%ebp), %edx
+
+	/* Calculate the appended DTB address. We need to add 4 bytes for
+	 * CRC dans padding to the next 16-byte paragraph (see ../tools/build.c)
+	 */
+	addl	$19, %ecx
+	andl	$0xfffffff0, %ecx
+	addl	%edx, %ecx
+
+	movl	(%ecx), %eax
+
+	/* DTB sig is 0xd00dfeed big endian */
+	movl	$0xedfe0dd0, %edx
+
+	cmpl	%eax, %edx
+	jne	2f
+
+	/* Get DTB size */
+	movl	4(%ecx), %edx
+	bswap	%edx
+
+	movl	%edx, dtb_sz(%ebp)
+	movl	%ecx, dtb_address(%ebp)
+2:
+#endif
+
 /*
  * Jump to the relocated address.
  */
@@ -234,6 +268,7 @@ relocated:
 	jmp	1b
 2:
 
+	pushl	%ebp
 /*
  * Do the extraction, and jump to the new kernel..
  */
@@ -255,11 +290,37 @@ relocated:
 	call	extract_kernel	/* returns kernel location in %eax */
 	addl	$24, %esp
 
+
+	popl	%ebp
+
+#if CONFIG_X86_APPENDED_DTB
+	pushl	%eax
+
+	movl	dtb_sz(%ebp), %edi		/* dtb size */
+	cmpl	$0, %edi
+	je	1f
+	movl	dtb_address(%ebp), %eax		/* dtb start */
+
+	pushl	%edi				/* dtb_size */
+	pushl	%eax				/* dtb_start */
+	pushl	%esi				/* real mode pointer */
+	call	relocate_dtb
+	addl	$12,%esp
+1:
+	popl	%eax
+#endif
+
 /*
  * Jump to the extracted kernel.
  */
 	xorl	%ebx, %ebx
 	jmp	*%eax
+
+	.data
+dtb_address:
+	.long 0
+dtb_sz:
+	.long 0
 
 #ifdef CONFIG_EFI_STUB
 	.data

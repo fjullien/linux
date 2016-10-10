@@ -409,3 +409,43 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	debug_putstr("done.\nBooting the kernel.\n");
 	return output;
 }
+
+#ifdef CONFIG_X86_APPENDED_DTB
+asmlinkage __visible void relocate_dtb(void *rmode,
+			unsigned char *dtb_data,
+			unsigned long dtb_size)
+{
+
+	struct boot_params *boot_params = rmode;
+	struct setup_data *data;
+	u32 pa_data, pa_next;
+	u32 data_len, data_type;
+
+	/* first iterate over the setup data to find a DTB if it exists */
+	pa_data = boot_params->hdr.setup_data;
+	while (pa_data) {
+		data = (void *)(unsigned long)pa_data;
+		data_len = data->len + sizeof(struct setup_data);
+		data_type = data->type;
+		pa_next = data->next;
+
+		if (data_type == SETUP_DTB) {
+			debug_putstr("Using bootloader DTB\n");
+			return;
+		}
+
+		pa_data = pa_next;
+	}
+
+	/* insert the DTB in the beginning */
+	data = malloc(sizeof(*data) + dtb_size);
+	data->type = SETUP_DTB;
+	data->next = boot_params->hdr.setup_data;
+	data->len = dtb_size;
+	memcpy(&data->data[0], dtb_data, dtb_size);
+	boot_params->hdr.setup_data = (uintptr_t)data;
+
+	debug_putstr("Using appended DTB\n");
+
+}
+#endif

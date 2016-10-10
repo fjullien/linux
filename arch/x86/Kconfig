@@ -2222,6 +2222,25 @@ config MODIFY_LDT_SYSCALL
 
 	  Saying 'N' here may make sense for embedded or server kernels.
 
+config X86_APPENDED_DTB
+	bool "Use appended device tree blob to bzImage"
+	depends on OF
+	select OF_EARLY_FLATTREE
+	help
+	  With this option, the boot code will look for a device tree binary
+	  (DTB) appended to bzImage
+	  (e.g. cat bzImage <filename>.dtb > bzImage_w_dtb).
+
+	  This is meant as a backward compatibility convenience for those
+	  systems with a bootloader that can't be upgraded to accommodate
+	  the documented boot protocol using a device tree.
+
+	  Beware that there is very little in terms of protection against
+	  this option being confused by leftover garbage in memory that might
+	  look like a DTB header after a reboot if no actual DTB is appended
+	  to bzImage.  Do not leave this option active in a production kernel
+	  if you don't intend to always append a DTB.
+
 source "kernel/livepatch/Kconfig"
 
 endmenu
